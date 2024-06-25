@@ -42,6 +42,7 @@ class ChatService {
         .where('senderUid', isEqualTo: userUid)
         .orderBy('timestamp', descending: true)
         .snapshots();
+
   }
 
   Stream<QuerySnapshot> getConversations(String userUid) {
@@ -50,4 +51,24 @@ class ChatService {
         .orderBy('timestamp', descending: true)
         .snapshots();
   }
+  Future<String?> getLastMessageTextBetweenUsers(String user1Email, String user2Email) async {
+  try {
+    QuerySnapshot messageQuery = await _firestore.collection('messages')
+        .where('senderEmail', whereIn: [user1Email, user2Email])
+        .where('recipientEmail', whereIn: [user1Email, user2Email])
+        .orderBy('timestamp', descending: true)
+        .limit(1)
+        .get();
+
+    if (messageQuery.docs.isNotEmpty) {
+      return messageQuery.docs.first['text'];
+    } else {
+      return null;
+    }
+  } catch (e) {
+    print('Failed to get last message: $e');
+    return null;
+  }
+}
+
 }
