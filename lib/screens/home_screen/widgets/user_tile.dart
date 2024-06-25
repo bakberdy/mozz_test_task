@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class UserTile extends StatelessWidget {
@@ -7,23 +9,48 @@ class UserTile extends StatelessWidget {
     required this.userName,
     required this.userAvatar,
     required this.onTap,
+    this.isItInAppBar = false,
   });
 
   final String lastMessage;
   final String userName;
   final String userAvatar;
   final VoidCallback onTap;
+  final bool isItInAppBar;
+
+  String getInitials(String name) {
+    List<String> nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+      return nameParts[0][0] + nameParts[1][0];
+    } else {
+      return nameParts[0][0];
+    }
+  }
+
+  Color getRandomColor() {
+    final List<Color> colors = [
+      Colors.red,
+      Colors.green,
+      Colors.blue,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+    ];
+    return colors[Random().nextInt(colors.length)];
+  }
 
   @override
   Widget build(BuildContext context) {
+    bool hasAvatar = userAvatar.isNotEmpty;
     return Column(
       children: [
-        Padding(padding: EdgeInsets.symmetric(horizontal: 15), child: Divider(
-          thickness: 1.0,
-          height: 1.0,
-          color: Colors.grey.shade200
-        ),),
-
+        isItInAppBar
+            ? const SizedBox.shrink()
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Divider(
+                    thickness: 1.0, height: 1.0, color: Colors.grey.shade200),
+              ),
         Container(
           margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 0.0),
           padding: const EdgeInsets.all(5.0),
@@ -32,9 +59,20 @@ class UserTile extends StatelessWidget {
           ),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundImage: NetworkImage(userAvatar),
-              backgroundColor: Colors.blue,
-              radius: 35.0,
+              backgroundImage: hasAvatar ? NetworkImage(userAvatar) : null,
+              backgroundColor:
+                  hasAvatar ? Colors.transparent : getRandomColor(),
+              radius: 24.0,
+              child: hasAvatar
+                  ? null
+                  : Text(
+                      getInitials(userName),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.0,
+                      ),
+                    ),
             ),
             title: Text(
               userName,
@@ -43,13 +81,21 @@ class UserTile extends StatelessWidget {
                 fontSize: 16.0,
               ),
             ),
-            subtitle: Text(
-              lastMessage,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 14.0,
-              ),
-            ),
+            subtitle: isItInAppBar
+                ? Text(
+                    "В сети",
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14.0,
+                    ),
+                  )
+                : Text(
+                    lastMessage,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14.0,
+                    ),
+                  ),
             onTap: onTap,
           ),
         ),
